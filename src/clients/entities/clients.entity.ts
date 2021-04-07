@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import { Client } from '../interfaces/client.interface';
 
 @Entity()
-export class ClientEntity implements Client {
+export class Clients implements Client {
   @PrimaryGeneratedColumn()
   id: number;
 

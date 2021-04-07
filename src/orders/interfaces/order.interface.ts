@@ -1,8 +1,12 @@
+import { Rooms } from '../../rooms/entities/rooms.entity';
+
 export interface Order {
   startDate: string;
   endDate: string;
-  roomId: number;
-  comment: string;
+  room: Rooms;
+  comment?: string | null;
+  price: number;
+  countDays: number;
   statusId: number;
 }
 

@@ -3,8 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { OrdersModule } from './orders/orders.module';
 import { AppService } from './app.service';
-import { OrderEntity } from './orders/entitites/order.entity';
-import { ClientEntity } from './clients/entities/client.entity';
+import { Orders } from './orders/entitites/orders.entity';
+import { Clients } from './clients/entities/clients.entity';
+import { Rooms } from './rooms/entities/rooms.entity';
+import { RoomTypes } from './rooms/entities/room-types.entity';
 
 @Module({
   imports: [
@@ -15,7 +17,7 @@ import { ClientEntity } from './clients/entities/client.entity';
       username: 'postgres',
       password: 'Lipton321',
       database: 'cdh_dev',
-      entities: [OrderEntity, ClientEntity],
+      entities: [Orders, Clients, Rooms, RoomTypes],
       synchronize: true,
     }),
     OrdersModule,

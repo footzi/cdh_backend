@@ -1,8 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { RoomType } from '../interfaces/room-type.interface';
+import { Rooms } from './rooms.entity';
 
 @Entity()
-export class RoomTypeEntity implements RoomType {
+export class RoomTypes implements RoomType {
   @PrimaryGeneratedColumn()
   id: number;
 

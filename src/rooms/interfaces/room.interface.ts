@@ -1,4 +1,6 @@
+import { RoomType } from './room-type.interface';
+
 export interface Room {
   name: string;
-  typeId: number;
+  type: RoomType;
 }

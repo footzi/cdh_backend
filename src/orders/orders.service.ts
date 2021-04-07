@@ -1,29 +1,39 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as dayjs from 'dayjs'
+import * as dayjs from 'dayjs';
 import { CreateOrderDTO } from './dto/create-order.dto';
 import { Order, CreateOrderResult } from './interfaces/order.interface';
-import { OrderEntity } from './entitites/order.entity';
+import { Orders } from './entitites/orders.entity';
 import { Client } from '../clients/interfaces/client.interface';
-import { ClientEntity } from '../clients/entities/client.entity';
+import { Clients } from '../clients/entities/clients.entity';
+import { Rooms } from '../rooms/entities/rooms.entity';
+import { Room } from '../rooms/interfaces/room.interface';
 
 @Injectable()
 export class OrdersService {
   constructor(
-    @InjectRepository(OrderEntity)
-    private ordersRepository: Repository<OrderEntity>,
-    @InjectRepository(ClientEntity)
-    private clientsRepository: Repository<ClientEntity>
+    @InjectRepository(Orders)
+    private ordersRepository: Repository<Orders>,
+    @InjectRepository(Clients)
+    private clientsRepository: Repository<Clients>,
+    @InjectRepository(Rooms)
+    private roomsRepository: Repository<Rooms>
   ) {}
 
-  async create(createOrderDTO: CreateOrderDTO): Promise<CreateOrderResult> {
+  async create(createOrderDTO: CreateOrderDTO): Promise<CreateOrderResult | null> {
     const order = await this.saveOrder(createOrderDTO);
-    const { startDate, endDate } = order;
-    const price = 1000;
-    const countDays = dayjs(endDate).diff(startDate, 'days');
 
-    await this.saveClient(createOrderDTO);
+    console.log(order);
+
+    if (!order) {
+      return null;
+    }
+
+    const { startDate, endDate, price, countDays} = order;
+    // const price =
+
+    // await this.saveClient(createOrderDTO);
 
     return {
       orderId: order.id,
@@ -34,19 +44,47 @@ export class OrdersService {
     };
   }
 
-  private saveOrder(createOrderDTO: CreateOrderDTO): Promise<OrderEntity> {
-    const order: Order = {
+  private async saveOrder(createOrderDTO: CreateOrderDTO): Promise<Orders | null> {
+    const { roomTypeId, startDate, endDate } = createOrderDTO;
+
+    const allRooms = await this.roomsRepository.find({ relations: ['type'], where: { type: Number(roomTypeId) } });
+    const orders = await this.ordersRepository.find({ relations: ['room', 'room.type'] });
+    const ordersOnlyRoomType = orders.filter((order) => order.room.type.id === Number(roomTypeId));
+
+    const freeRoom = allRooms.find((room) => {
+      const ordersByRoomId = ordersOnlyRoomType.filter((order) => order.room.id === room.id);
+      return ordersByRoomId.every(
+        (order) =>
+          !(
+            dayjs(order.startDate).isBetween(startDate, endDate, null, '[]') ||
+            dayjs(order.endDate).isBetween(startDate, endDate, null, '[]')
+          )
+      );
+    });
+
+    if (!freeRoom) {
+      return null;
+    }
+
+    const countDays = dayjs(endDate).diff(startDate, 'days');
+    const price = freeRoom.type.price * countDays;
+
+    console.log(price);
+
+    const order = {
       startDate: createOrderDTO.startDate,
       endDate: createOrderDTO.endDate,
       comment: createOrderDTO.comment,
-      roomId: 1,
+      room: freeRoom,
+      countDays,
+      price,
       statusId: 2,
     };
 
     return this.ordersRepository.save(order);
   }
 
-  private saveClient(createOrderDTO: CreateOrderDTO): Promise<ClientEntity> {
+  private saveClient(createOrderDTO: CreateOrderDTO): Promise<Clients> {
     const client: Client = {
       firstName: createOrderDTO.firstName,
       lastName: createOrderDTO.lastName,

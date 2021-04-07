@@ -6,5 +6,5 @@ export class CreateOrderDTO {
   comment: string;
   email: string;
   phone: string;
-  roomTypeId: string;
+  roomTypeId: number;
 }
