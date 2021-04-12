@@ -9,8 +9,8 @@ export class Clients implements Client {
   @Column('varchar', { length: 200 })
   firstName: string;
 
-  @Column('varchar', { length: 200 })
-  lastName: string;
+  @Column('varchar', { length: 200, nullable: true })
+  lastName?: string | null;
 
   @Column('varchar', { length: 150 })
   email: string;

@@ -1,14 +1,11 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-import { RoomType } from '../interfaces/room-type.interface';
+import { OrderStatus } from '../interfaces/order-statuses.interface';
 
 @Entity()
-export class RoomTypes implements RoomType {
+export class OrderStatuses implements OrderStatus {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column('varchar', { length: 100 })
   name: string;
-
-  @Column('integer')
-  price: number;
 }

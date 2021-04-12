@@ -3,12 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as dayjs from 'dayjs';
 import { CreateOrderDTO } from './dto/create-order.dto';
-import { Order, CreateOrderResult } from './interfaces/order.interface';
+import { CreateOrderResult } from './interfaces/order.interface';
 import { Orders } from './entitites/orders.entity';
 import { Client } from '../clients/interfaces/client.interface';
 import { Clients } from '../clients/entities/clients.entity';
 import { Rooms } from '../rooms/entities/rooms.entity';
-import { Room } from '../rooms/interfaces/room.interface';
+import { ORDER_STATUSES } from './orders.constants';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class OrdersService {
@@ -18,39 +19,49 @@ export class OrdersService {
     @InjectRepository(Clients)
     private clientsRepository: Repository<Clients>,
     @InjectRepository(Rooms)
-    private roomsRepository: Repository<Rooms>
+    private roomsRepository: Repository<Rooms>,
+    private mailService: MailService
   ) {}
 
   async create(createOrderDTO: CreateOrderDTO): Promise<CreateOrderResult | null> {
     const order = await this.saveOrder(createOrderDTO);
 
-    console.log(order);
-
     if (!order) {
       return null;
     }
 
-    const { startDate, endDate, price, countDays} = order;
-    // const price =
+    const client = await this.saveClient(createOrderDTO);
 
-    // await this.saveClient(createOrderDTO);
+    const { startDate, endDate, price, countDays } = order;
+    const { firstName, lastName, email, phone } = client;
+
+    this.sendMailToClient(order, client);
+    this.sendMailToAdmin(order, client);
 
     return {
-      orderId: order.id,
+      id: order.id,
       startDate,
       endDate,
       price,
       countDays,
+      firstName,
+      lastName,
+      email,
+      phone,
     };
   }
 
   private async saveOrder(createOrderDTO: CreateOrderDTO): Promise<Orders | null> {
     const { roomTypeId, startDate, endDate } = createOrderDTO;
 
+    // выбираем все комнаты с данным типом команты
     const allRooms = await this.roomsRepository.find({ relations: ['type'], where: { type: Number(roomTypeId) } });
+
+    // выбираем все существующие заказы и фильтруем по данному типу команты
     const orders = await this.ordersRepository.find({ relations: ['room', 'room.type'] });
     const ordersOnlyRoomType = orders.filter((order) => order.room.type.id === Number(roomTypeId));
 
+    // ищем свободную команту с условием чтобы дата существующего заказа не входила в принятый интервал
     const freeRoom = allRooms.find((room) => {
       const ordersByRoomId = ordersOnlyRoomType.filter((order) => order.room.id === room.id);
       return ordersByRoomId.every(
@@ -69,8 +80,6 @@ export class OrdersService {
     const countDays = dayjs(endDate).diff(startDate, 'days');
     const price = freeRoom.type.price * countDays;
 
-    console.log(price);
-
     const order = {
       startDate: createOrderDTO.startDate,
       endDate: createOrderDTO.endDate,
@@ -78,13 +87,19 @@ export class OrdersService {
       room: freeRoom,
       countDays,
       price,
-      statusId: 2,
+      status: ORDER_STATUSES.BOOKED,
     };
 
     return this.ordersRepository.save(order);
   }
 
-  private saveClient(createOrderDTO: CreateOrderDTO): Promise<Clients> {
+  private async saveClient(createOrderDTO: CreateOrderDTO): Promise<Clients> {
+    const savedClient = await this.clientsRepository.findOne({ email: createOrderDTO.email });
+
+    if (savedClient) {
+      return savedClient;
+    }
+
     const client: Client = {
       firstName: createOrderDTO.firstName,
       lastName: createOrderDTO.lastName,
@@ -93,5 +108,35 @@ export class OrdersService {
     };
 
     return this.clientsRepository.save(client);
+  }
+
+  private sendMailToClient(order: Orders, client: Clients) {
+    const data = {
+      startDate: order.startDate,
+      endDate: order.endDate,
+      price: order.price,
+      countDays: order.countDays,
+      email: client.email,
+      firstName: client.firstName,
+    };
+
+    this.mailService.sendClientAfterOrderCreate(data);
+  }
+
+  private sendMailToAdmin(order: Orders, client: Clients) {
+    const data = {
+      startDate: order.startDate,
+      endDate: order.endDate,
+      price: order.price,
+      countDays: order.countDays,
+      roomName: order.room.name,
+      roomType: order.room.type.name,
+      email: client.email,
+      firstName: client.firstName,
+      lastName: client.lastName,
+      phone: client.phone,
+    };
+
+    this.mailService.sendAdminOfterOrderCreate(data);
   }
 }
