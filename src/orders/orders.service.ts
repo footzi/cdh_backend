@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as dayjs from 'dayjs';
@@ -24,6 +24,8 @@ export class OrdersService {
   ) {}
 
   async create(createOrderDTO: CreateOrderDTO): Promise<CreateOrderResult | null> {
+    this.createOrderValidation(createOrderDTO);
+
     const order = await this.saveOrder(createOrderDTO);
 
     if (!order) {
@@ -49,6 +51,15 @@ export class OrdersService {
       email,
       phone,
     };
+  }
+
+  createOrderValidation(createOrderDTO: CreateOrderDTO) {
+    const { startDate, endDate } = createOrderDTO;
+    const isStartDateAfterEndData = dayjs(startDate).isAfter(endDate, 'day');
+
+    if (isStartDateAfterEndData) {
+      throw new HttpException('Дата отъезда меньше чем дата заезда', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
   }
 
   private async saveOrder(createOrderDTO: CreateOrderDTO): Promise<Orders | null> {
@@ -131,6 +142,7 @@ export class OrdersService {
       countDays: order.countDays,
       roomName: order.room.name,
       roomType: order.room.type.name,
+      comment: order.comment,
       email: client.email,
       firstName: client.firstName,
       lastName: client.lastName,

@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { OrdersModule } from './orders/orders.module';
 import { AppService } from './app.service';
 import { MailModule } from './mail/mail.module';
+import { CallbackModule } from './callback/callback.module';
 import { Orders } from './orders/entitites/orders.entity';
 import { Clients } from './clients/entities/clients.entity';
 import { Rooms } from './rooms/entities/rooms.entity';
@@ -27,6 +28,7 @@ import configuration from './config';
     }),
     MailModule,
     OrdersModule,
+    CallbackModule,
   ],
   controllers: [AppController],
   providers: [AppService],

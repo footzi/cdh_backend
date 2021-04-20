@@ -18,5 +18,10 @@ export interface MailToAdminAfterOrderCreate {
   phone: string;
   comment?: string | null;
   roomName: string;
-  roomType: string
+  roomType: string;
+}
+
+export interface MailToAdminCallback {
+  name: string;
+  phone: string;
 }

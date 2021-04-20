@@ -6,7 +6,8 @@ import * as isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isBetween);
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {cors: true});
+  // todо В env
+  const app = await NestFactory.create(AppModule, { cors: true });
   await app.listen(7000);
 }
 bootstrap();
