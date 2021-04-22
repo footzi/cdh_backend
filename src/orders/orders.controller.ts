@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Body, HttpCode } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode } from '@nestjs/common';
 import { CreateOrderDTO } from './dto/create-order.dto';
 import { OrdersService } from './orders.service';
 import { CreateOrderResult } from './interfaces/order.interface';
 import { ErrorHandler } from '../utils/errorHandler';
 
-@Controller('orders')
+@Controller('/api/orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 

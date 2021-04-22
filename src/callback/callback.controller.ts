@@ -3,7 +3,7 @@ import { SendCallbackDto } from './dto/send-callback-dto';
 import { ErrorHandler } from '../utils/errorHandler';
 import { CallbackService } from './callback.service';
 
-@Controller('callback')
+@Controller('/api/callback')
 export class CallbackController {
   constructor(private readonly callbackService: CallbackService) {}
 
