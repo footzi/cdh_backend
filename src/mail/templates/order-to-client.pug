@@ -1,42 +1,198 @@
-meta(charset="UTF-8")
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+html
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport', content='width=device-width,initial-scale=1')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
 
-table(cellpadding="0", cellspacing="0", align="center", width="100%", style={"border-collapse": "collapse", "margin":"20px auto 40px auto", "max-width": "600px", "outline": "1px solid red"})
-  tr
-    td(style="padding-left: 40px")
-      img(src="https://catdog-house.ru/images/logo-mini.svg" alt="Cat Dog House" border="0" width="342px" height="62px", style={"display": "block"})
-    td(style={"font-size":"14px", "font-weight": "600"}) +7 (953) 173-32-97
+  style(type='text/css').
+    table {
+      font-family: "Arial", sans-serif;
+      max-width: 600px;
+      color: #333333;
+      border-collapse: collapse;
+    }
 
-table(cellpadding="0", cellspacing="0", align="center", width="100%", style={"border-collapse": "collapse", "margin":"0 auto 50px auto", "max-width": "600px", "outline": "1px solid red"})
-  tr(style={"background-color": "#FF9068"})
-    td(style={"padding":"25px 120px 25px 40px", "font-size":"20px", "color": "#FFFFFF", "border-top-left-radius": "6px", "border-bottom-left-radius": "6px"}) Спасибо!
-    td(style={"font-size": "20px", "color": "#FFFFFF", "border-top-right-radius": "6px", "border-bottom-right-radius": "6px"}) Бронь <span style="font-weight: 600">№0057</span> оформлена.
+    .hidden {
+      font-size: 0px;
+      font-color: #ffffff;
+      opacity: 0;
+      visibility: hidden;
+      width: 0;
+      height: 0;
+      display: none;
+    }
 
-table(cellpadding="0", cellspacing="0", align="center", width="100%", style={"border-collapse": "collapse", "margin":"0 auto 50px auto", "max-width": "600px", "outline": "1px solid red", "color": "#333333"})
-  tr
-    td(style={"width": "200px", "padding-left": "40px", "padding-bottom": "30px", "font-size": "16px", "font-style": "italic"}) Даты прибывания:
-    td(style={"width": "240px", "padding-bottom": "30px", "font-size": "18px"}) 07.07.2021 - 21.07.2021
-    td(style={"padding-bottom": "30px", "font-size": "20px", "color": "#FF9068"}) 14 дней
-  tr
-    td(style={"width": "200px", "padding-left": "40px", "padding-bottom": "30px", "font-size": "16px", "font-style": "italic"}) Ваше имя:
-    td(style={"width": "240px", "padding-bottom": "30px", "font-size": "18px"}) Мария
-  tr
-    td(style={"width": "200px", "padding-left": "40px", "padding-bottom": "30px", "font-size": "16px", "font-style": "italic"}) Ваш телефон:
-    td(style={"width": "240px", "padding-bottom": "30px", "font-size": "18px"}) +7(980)758-78-98
-  tr
-    td(style={"width": "200px", "padding-left": "40px", "padding-bottom": "30px", "font-size": "16px", "font-style": "italic"}) Ваш e-mail:
-    td(style={"width": "240px", "padding-bottom": "30px", "font-size": "18px"}) specy98@mail.ru
+    .header-cell {
+      padding-left: 30px;
+    }
 
-table(cellpadding="0", cellspacing="0", align="center", width="100%", style={"border-collapse": "collapse", "margin":"0 auto 25px auto", "max-width": "600px"})
-  tr
-    td(style={"padding": "0 40px 0 40px"})
-      div(style={"width": "100%", height: "1px", "background-color": "#FF9068"})
+    .header-phone {
+      font-size: 14px;
+      font-weight: 600;
+      vertical-align: bottom;
+      padding: 10px 30px 10px 0;
+      display: inline-block;
+      color: #333333;
+      text-decoration: none;
+    }
 
-table(cellpadding="0", cellspacing="0", align="center", width="100%", style={"border-collapse": "collapse", "margin":"0 auto 60px auto", "max-width": "600px", "color": "#333333"})
+    .header-image {
+      display: inline-block;
+      margin: 0 77px 0 0;
+    }
+
+    .thank-cell {
+      padding: 25px 0 15px 30px;
+      border-radius: 6px;
+    }
+
+    .thank-text {
+      font-size: 20px;
+      color: #ffffff;
+      padding-bottom: 10px;
+      display: inline-block;
+    }
+
+    .info-cell {
+      padding-bottom: 20px;
+      padding-left: 30px;
+    }
+
+    .info-item {
+      width: 200px;
+      max-width: 300px;
+      font-size: 16px;
+      font-style: italic;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    .info-value {
+      width: 240px;
+      font-size: 18px;
+      display: inline-block;
+      color: #333333;
+      text-decoration: none;
+    }
+
+    .info-value {
+      width: auto;
+    }
+
+    .count-days {
+      width: 80px;
+      padding-right: 40px;
+      font-size: 18px;
+      color: #ff9068;
+      display: inline-block;
+      text-align: right;
+    }
+
+    .cost-cell-line {
+      padding: 0 30px 0 30px;
+    }
+
+    .cost-cell {
+      padding: 0 30px 0 30px;
+    }
+
+    .cost-text {
+      font-size: 16px;
+      font-weight: 600;
+      padding-bottom: 10px;
+      display: inline-block;
+    }
+
+    .cost-text-value {
+      width: 481px;
+    }
+
+    .cost-text-price {
+      text-align: right;
+    }
+
+    .pay-info {
+      font-size: 16px;
+      padding: 12px 16px;
+      font-weight: 600;
+      border: 1px solid #ff9068;
+      border-radius: 12px;
+      color: #ff9068;
+    }
+  
+body
+  .hidden Спасибо! Ваша бронь №#{ orderId } оформлена. Даты пребывания: #{ startDate } - #{ endDate } (#{ countDays } суток). На имя #{ firstName } #{ lastName }
+
+  table(cellpadding='0', cellspacing='0', align='center', width='100%', style={ margin: "20px auto 40px auto" })
     tr
-      td(style={"font-size": "16px", "padding": "0 0 0 40px", "font-weight": "600"}) Стоимость проживания (14 дней)
-      td(style={"font-size": "16px", "padding": "0 40px 0 0", "font-weight": "600", "text-align": "right"}) 7 700 р
+      td.header-cell
+        img.header-image(
+          src='https://catdog-house.ru/images/logo-mini.png',
+          alt='Cat Dog House',
+          border='0',
+          width='342px',
+          height='62px'
+        )
+        span(style={ display: "none" }) Наш телефон:
+        a.header-phone(href='tel:+79531733297') +7 (953) 173-32-97
 
-table(cellpadding="0", cellspacing="0", align="center", width="100%", style={"border-collapse": "collapse", "margin":"0 auto 60px auto", "max-width": "600px", "color": "#333333"})
-  tr(style={"text-align": "center"})
-    td
-      span(style={"font-size": "16px", "padding": "12px 16px", "font-weight": "600", "border": "1px solid #FF9068", "border-radius": "12px", "color": "#FF9068"}) Оплата происходит в день заселения
+  table(cellpadding='0', cellspacing='0', align='center', width='100%', style={ margin: "0 auto 50px auto" })
+    tr(style={ "background-color": "#FF9068" })
+      td.thank-cell
+        span.thank-text(style={
+          width: "200px",
+        }) Спасибо!
+        span.thank-text Бронь <span style="font-weight: 600">№#{ orderId }</span> оформлена.
+
+  table(cellpadding='0', cellspacing='0', align='center', width='100%', style={ margin: "0 auto 50px auto" })
+    tr
+      td.info-cell
+        span.info-item Даты пребывания:
+        span.info-value #{ startDate } - #{ endDate }
+        span.count-days (#{ countDays } суток)
+    tr
+      td.info-cell
+        span.info-item Ваше имя:
+        span.info-value #{ firstName } #{ lastName }
+    tr
+      td.info-cell
+        span.info-item Ваш телефон:
+        a.info-value(href="tel:" + phone) #{ phone }
+    tr
+      td.info-cell
+        span.info-item Ваш e-mail:
+        a.info-value(href="mailto:" + email) #{ email }
+    tr
+      td.info-cell
+        span.info-item Комментарий:
+        span.info-value.info-value-comment #{ comment }
+
+  table(cellpadding='0', cellspacing='0', align='center', width='100%', style={ margin: "0 auto 25px auto" })
+    tr
+      td.cost-cell-line
+        div(style={ width: "100%", height: "1px", "background-color": "#FF9068" })
+
+  table(cellpadding='0', cellspacing='0', align='center', width='100%', style={ margin: "0 auto 50px auto" })
+    tr
+      td.cost-cell
+        span.cost-text.cost-text-value Стоимость проживания (#{ countDays } суток):
+        span.cost-text.cost-text-price #{ price } р
+
+  table(cellpadding='0', cellspacing='0', align='center', width='100%', style={ margin: "0 auto 60px auto" })
+    tr(style={ "text-align": "center" })
+      td
+        span.pay-info Оплата происходит в день заселения
+
+  table(cellpadding='0', cellspacing='0', align='center', width='100%', style={
+    margin: "0 auto 60px auto",
+  })
+    tr(style={ "text-align": "center" })
+      td(style={ "font-size": "18px" }) За процессом открытия гостиницы вы можете следить на нашей страничке в <a style="color: #FF9068; text-decoration: underline" href="https://instagram.com/catdoghouse_hotel" target="_blank">Instagram</a>
+
+  table(cellpadding='0', cellspacing='0', align='center', width='100%', style={
+    margin: "0 auto 60px auto",
+    width: "500px"
+  })
+    tr(style={ "text-align": "center"})
+      td(style={ "font-size": "14px" }) Настроить вашу рассылку можно в <a style="color: #FF9068; text-decoration: underline" href="https://catdog-house.ru/cabinet" target="_blank">личном кабинете</a>. Если вы больше не хотите получать наши письма, то можете <a style="color: #FF9068; text-decoration: underline" href="https://catdog-house.ru/cabinet" target="_blank">отписаться</a> в любое время

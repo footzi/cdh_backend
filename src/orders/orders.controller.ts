@@ -2,7 +2,7 @@ import { Controller, Post, Body, HttpCode } from '@nestjs/common';
 import { CreateOrderDTO } from './dto/create-order.dto';
 import { OrdersService } from './orders.service';
 import { CreateOrderResult } from './interfaces/order.interface';
-import { ErrorHandler } from '../utils/errorHandler';
+import { errorHandler } from '../utils/errorHandler';
 
 @Controller('/api/orders')
 export class OrdersController {
@@ -16,7 +16,7 @@ export class OrdersController {
         order: await this.ordersService.create(createOrderDTO),
       };
     } catch (error) {
-      ErrorHandler(error);
+      errorHandler(error);
     }
   }
 }

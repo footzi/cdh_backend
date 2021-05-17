@@ -10,6 +10,7 @@ import { Clients } from '../clients/entities/clients.entity';
 import { Rooms } from '../rooms/entities/rooms.entity';
 import { ORDER_STATUSES } from './orders.constants';
 import { MailService } from '../mail/mail.service';
+import { formatToFrontendDate } from '../utils/formatToFrontendDate';
 
 @Injectable()
 export class OrdersService {
@@ -65,14 +66,14 @@ export class OrdersService {
   private async saveOrder(createOrderDTO: CreateOrderDTO): Promise<Orders | null> {
     const { roomTypeId, startDate, endDate } = createOrderDTO;
 
-    // выбираем все комнаты с данным типом команты
+    // выбираем все комнаты с данным типом комнаты
     const allRooms = await this.roomsRepository.find({ relations: ['type'], where: { type: Number(roomTypeId) } });
 
     // выбираем все существующие заказы и фильтруем по данному типу команты
     const orders = await this.ordersRepository.find({ relations: ['room', 'room.type'] });
     const ordersOnlyRoomType = orders.filter((order) => order.room.type.id === Number(roomTypeId));
 
-    // ищем свободную команту с условием чтобы дата существующего заказа не входила в принятый интервал
+    // ищем свободную комнату с условием чтобы дата существующего заказа не входила в принятый интервал
     const freeRoom = allRooms.find((room) => {
       const ordersByRoomId = ordersOnlyRoomType.filter((order) => order.room.id === room.id);
       return ordersByRoomId.every(
@@ -123,12 +124,15 @@ export class OrdersService {
 
   private sendMailToClient(order: Orders, client: Clients) {
     const data = {
-      startDate: order.startDate,
-      endDate: order.endDate,
+      startDate: formatToFrontendDate(order.startDate),
+      endDate: formatToFrontendDate(order.endDate),
+      orderId: order.id,
       price: order.price,
       countDays: order.countDays,
+      comment: order.comment,
       email: client.email,
       firstName: client.firstName,
+      phone: client.phone,
     };
 
     this.mailService.sendClientAfterOrderCreate(data);
@@ -136,8 +140,9 @@ export class OrdersService {
 
   private sendMailToAdmin(order: Orders, client: Clients) {
     const data = {
-      startDate: order.startDate,
-      endDate: order.endDate,
+      startDate: formatToFrontendDate(order.startDate),
+      endDate: formatToFrontendDate(order.endDate),
+      orderId: order.id,
       price: order.price,
       countDays: order.countDays,
       roomName: order.room.name,

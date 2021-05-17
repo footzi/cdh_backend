@@ -1,6 +1,6 @@
 import { Controller, Post, Body, HttpCode } from '@nestjs/common';
 import { SendCallbackDto } from './dto/send-callback-dto';
-import { ErrorHandler } from '../utils/errorHandler';
+import { errorHandler } from '../utils/errorHandler';
 import { CallbackService } from './callback.service';
 
 @Controller('/api/callback')
@@ -15,7 +15,7 @@ export class CallbackController {
         isSuccessful: await this.callbackService.send(sendCallbackDto),
       };
     } catch (error) {
-      ErrorHandler(error);
+      errorHandler(error);
     }
   }
 }

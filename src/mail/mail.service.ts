@@ -16,7 +16,7 @@ export class MailService {
 
     await this.mailerService.sendMail({
       to: email,
-      subject: 'У вас новая бронь',
+      subject: 'Вы забронировали номер',
       template: 'order-to-client',
       context: {
         ...data,
