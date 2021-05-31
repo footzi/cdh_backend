@@ -1,3 +1,4 @@
+// todo почему тут функция?
 export default () => ({
   port: parseInt(process.env.PORT, 10) || 3000,
   useCors: !!process.env.USE_CORS,
