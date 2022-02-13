@@ -12,6 +12,7 @@ import { Rooms } from './rooms/entities/rooms.entity';
 import { RoomTypes } from './rooms/entities/room-types.entity';
 import configuration from './config';
 import { AuthModule } from './auth/auth.module';
+import { Auths } from './auth/entitites/auth.entity';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { AuthModule } from './auth/auth.module';
     TypeOrmModule.forRootAsync({
       useFactory: (config: ConfigService) => ({
         ...config.get('database'),
-        entities: [Orders, Users, Rooms, RoomTypes],
+        entities: [Orders, Users, Rooms, RoomTypes, Auths],
       }),
       inject: [ConfigService],
     }),

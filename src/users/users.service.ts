@@ -11,7 +11,19 @@ export class UsersService {
     private clientsRepository: Repository<User>
   ) {}
 
-  async findById(id: string): Promise<User | undefined> {
+  /**
+   * Поиск пользователя по логину
+   * @param {string} login - логин
+   */
+  async findByLogin(login: string): Promise<User | undefined> {
+    return this.clientsRepository.findOne({ login });
+  }
+
+  /**
+   * Поиск пользователя по id
+   * @param {number} id - логин
+   */
+  async findById(id: number): Promise<User | undefined> {
     return this.clientsRepository.findOne(id);
   }
 }

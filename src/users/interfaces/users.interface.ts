@@ -7,7 +7,7 @@ export interface User {
   lastName?: string;
   email: string;
   phone: string;
-  role: USER_ROLES;
+  roles: USER_ROLES[];
   password?: string;
   isConfirm: boolean;
   isActive: boolean;

@@ -25,8 +25,8 @@ export class Users implements User {
   @Column('varchar', { length: 100 })
   password?: string;
 
-  @Column('varchar', { length: 100 })
-  role: USER_ROLES;
+  @Column('varchar', { array: true })
+  roles: USER_ROLES[];
 
   @Column('boolean')
   isConfirm: boolean;

@@ -129,7 +129,7 @@ export class OrdersService {
       phone: createOrderDTO.phone,
       isConfirm: false,
       isActive: true,
-      role: USER_ROLES.CLIENT,
+      roles: [USER_ROLES.CLIENT],
     };
 
     return this.usersRepository.save(user);
