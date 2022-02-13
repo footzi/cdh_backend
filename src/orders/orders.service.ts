@@ -5,20 +5,21 @@ import * as dayjs from 'dayjs';
 import { CreateOrderDTO } from './dto/create-order.dto';
 import { CreateOrderResult } from './interfaces/order.interface';
 import { Orders } from './entitites/orders.entity';
-import { Client } from '../clients/interfaces/client.interface';
-import { Clients } from '../clients/entities/clients.entity';
+import { User } from '../users/interfaces/users.interface';
+import { Users } from '../users/entities/users.entity';
 import { Rooms } from '../rooms/entities/rooms.entity';
 import { ORDER_STATUSES } from './orders.constants';
 import { MailService } from '../mail/mail.service';
 import { formatToFrontendDate } from '../utils/formatToFrontendDate';
+import { USER_ROLES } from '../users/users.constants';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Orders)
     private ordersRepository: Repository<Orders>,
-    @InjectRepository(Clients)
-    private clientsRepository: Repository<Clients>,
+    @InjectRepository(Users)
+    private usersRepository: Repository<Users>,
     @InjectRepository(Rooms)
     private roomsRepository: Repository<Rooms>,
     private mailService: MailService
@@ -52,6 +53,13 @@ export class OrdersService {
       email,
       phone,
     };
+  }
+
+  /**
+   * Получение списка всех заказов
+   */
+  getAllOrders(): Promise<Orders[]> {
+    return this.ordersRepository.find();
   }
 
   createOrderValidation(createOrderDTO: CreateOrderDTO) {
@@ -105,24 +113,29 @@ export class OrdersService {
     return this.ordersRepository.save(order);
   }
 
-  private async saveClient(createOrderDTO: CreateOrderDTO): Promise<Clients> {
-    const savedClient = await this.clientsRepository.findOne({ email: createOrderDTO.email });
+  // @todo вынести все в clientservice
+  private async saveClient(createOrderDTO: CreateOrderDTO): Promise<Users> {
+    const savedClient = await this.usersRepository.findOne({ email: createOrderDTO.email });
 
     if (savedClient) {
       return savedClient;
     }
 
-    const client: Client = {
+    const user: User = {
+      login: createOrderDTO.phone,
       firstName: createOrderDTO.firstName,
       lastName: createOrderDTO.lastName,
       email: createOrderDTO.email,
       phone: createOrderDTO.phone,
+      isConfirm: false,
+      isActive: true,
+      role: USER_ROLES.CLIENT,
     };
 
-    return this.clientsRepository.save(client);
+    return this.usersRepository.save(user);
   }
 
-  private sendMailToClient(order: Orders, client: Clients) {
+  private sendMailToClient(order: Orders, user: Users) {
     const data = {
       startDate: formatToFrontendDate(order.startDate),
       endDate: formatToFrontendDate(order.endDate),
@@ -130,15 +143,15 @@ export class OrdersService {
       price: order.price,
       countDays: order.countDays,
       comment: order.comment,
-      email: client.email,
-      firstName: client.firstName,
-      phone: client.phone,
+      email: user.email,
+      firstName: user.firstName,
+      phone: user.phone,
     };
 
     this.mailService.sendClientAfterOrderCreate(data);
   }
 
-  private sendMailToAdmin(order: Orders, client: Clients) {
+  private sendMailToAdmin(order: Orders, client: User) {
     const data = {
       startDate: formatToFrontendDate(order.startDate),
       endDate: formatToFrontendDate(order.endDate),

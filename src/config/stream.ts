@@ -33,7 +33,7 @@ export const STREAM_CONFIG = {
         edge: process.env.STREAM_CAM_1_LINK,
         name: process.env.STREAM_CAM_1_NAME,
         rtsp_transport: 'tcp',
-      }
+      },
     ],
   },
 };

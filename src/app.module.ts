@@ -7,10 +7,11 @@ import { AppService } from './app.service';
 import { MailModule } from './mail/mail.module';
 import { CallbackModule } from './callback/callback.module';
 import { Orders } from './orders/entitites/orders.entity';
-import { Clients } from './clients/entities/clients.entity';
+import { Users } from './users/entities/users.entity';
 import { Rooms } from './rooms/entities/rooms.entity';
 import { RoomTypes } from './rooms/entities/room-types.entity';
 import configuration from './config';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -22,13 +23,14 @@ import configuration from './config';
     TypeOrmModule.forRootAsync({
       useFactory: (config: ConfigService) => ({
         ...config.get('database'),
-        entities: [Orders, Clients, Rooms, RoomTypes],
+        entities: [Orders, Users, Rooms, RoomTypes],
       }),
       inject: [ConfigService],
     }),
     MailModule,
     OrdersModule,
     CallbackModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
