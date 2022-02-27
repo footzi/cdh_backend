@@ -1,6 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn } from 'typeorm';
 import { User } from '../interfaces/users.interface';
 import { USER_ROLES } from '../users.constants';
+import { Pets } from '../../pets/entitites/pets.entity';
 
 @Entity()
 export class Users implements User {
@@ -22,6 +23,9 @@ export class Users implements User {
   @Column('varchar', { length: 100 })
   phone: string;
 
+  @Column('varchar', { length: 200, nullable: true })
+  avatar?: string;
+
   @Column('varchar', { length: 100 })
   password?: string;
 
@@ -33,4 +37,7 @@ export class Users implements User {
 
   @Column('boolean')
   isActive: boolean;
+
+  @OneToMany(() => Pets, (pet) => pet.client)
+  pets: Pets[];
 }

@@ -13,6 +13,8 @@ import { RoomTypes } from './rooms/entities/room-types.entity';
 import configuration from './config';
 import { AuthModule } from './auth/auth.module';
 import { Auths } from './auth/entitites/auth.entity';
+import { Pets } from './pets/entitites/pets.entity';
+import { PetsModule } from './pets/pets.module';
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { Auths } from './auth/entitites/auth.entity';
     TypeOrmModule.forRootAsync({
       useFactory: (config: ConfigService) => ({
         ...config.get('database'),
-        entities: [Orders, Users, Rooms, RoomTypes, Auths],
+        entities: [Orders, Users, Rooms, RoomTypes, Auths, Pets],
       }),
       inject: [ConfigService],
     }),
@@ -32,6 +34,7 @@ import { Auths } from './auth/entitites/auth.entity';
     OrdersModule,
     CallbackModule,
     AuthModule,
+    PetsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

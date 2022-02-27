@@ -29,8 +29,7 @@ export class AuthService {
   async validateUser(login: string, pass: string): Promise<User | null> {
     const user = await this.usersService.findByLogin(login);
 
-    // @todo тут должно быть шифрование basecrypt
-    if (user && user.isConfirm && user.isActive && user.password === pass) {
+    if (user && user.isConfirm && user.isActive && (await Crypt.compare(pass, user.password))) {
       const { password, ...result } = user;
       return result;
     }
@@ -102,9 +101,6 @@ export class AuthService {
     } else {
       await this.authRepository.save({ refresh, userId });
     }
-
-    // await this.authRepository.update(userId, { refresh });
-    // await this.authRepository.save({ refresh, userId });
   }
 
   /**
@@ -121,9 +117,7 @@ export class AuthService {
   /**
    * Удаление токена
    *
-   * @param {number} id - id токена
    * @param {number} userId - id пользователя
-   * @param {string} refresh - токен
    */
   async removeRefresh(userId: number): Promise<void> {
     await this.authRepository.delete({ userId });

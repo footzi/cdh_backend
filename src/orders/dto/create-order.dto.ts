@@ -1,3 +1,5 @@
+import { Pet } from '../../pets/interfaces/pets.interfaces';
+
 export class CreateOrderDTO {
   startDate: string;
   endDate: string;
@@ -7,4 +9,6 @@ export class CreateOrderDTO {
   email: string;
   phone: string;
   roomTypeId: number;
+  clientId?: number;
+  pets?: Pet[];
 }

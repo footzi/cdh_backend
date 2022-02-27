@@ -25,8 +25,6 @@ export class OrdersController {
     }
   }
 
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @SetMetadata('roles', [USER_ROLES.ADMIN])
   @Post()
   @HttpCode(201)
   async create(@Body() createOrderDTO: CreateOrderDTO): Promise<{ order: CreateOrderResult | null }> {

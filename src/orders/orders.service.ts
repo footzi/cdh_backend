@@ -5,6 +5,7 @@ import * as dayjs from 'dayjs';
 import { CreateOrderDTO } from './dto/create-order.dto';
 import { CreateOrderResult } from './interfaces/order.interface';
 import { Orders } from './entitites/orders.entity';
+import { Order } from './interfaces/order.interface';
 import { User } from '../users/interfaces/users.interface';
 import { Users } from '../users/entities/users.entity';
 import { Rooms } from '../rooms/entities/rooms.entity';
@@ -12,6 +13,7 @@ import { ORDER_STATUSES } from './orders.constants';
 import { MailService } from '../mail/mail.service';
 import { formatToFrontendDate } from '../utils/formatToFrontendDate';
 import { USER_ROLES } from '../users/users.constants';
+import { UserUtils } from '../users/user.utils';
 
 @Injectable()
 export class OrdersService {
@@ -58,8 +60,15 @@ export class OrdersService {
   /**
    * Получение списка всех заказов
    */
-  getAllOrders(): Promise<Orders[]> {
-    return this.ordersRepository.find();
+  async getAllOrders(): Promise<Order[]> {
+    const orders = await this.ordersRepository.find({
+      relations: ['client', 'client.pets', 'rooms', 'rooms.type'],
+    });
+
+    return orders.map((order) => ({
+      ...order,
+      client: UserUtils.convertToClient(order.client),
+    }));
   }
 
   createOrderValidation(createOrderDTO: CreateOrderDTO) {
@@ -79,11 +88,11 @@ export class OrdersService {
 
     // выбираем все существующие заказы и фильтруем по данному типу команты
     const orders = await this.ordersRepository.find({ relations: ['room', 'room.type'] });
-    const ordersOnlyRoomType = orders.filter((order) => order.room.type.id === Number(roomTypeId));
+    const ordersOnlyRoomType = orders.filter((order) => order.rooms[0].type.id === Number(roomTypeId));
 
     // ищем свободную комнату с условием чтобы дата существующего заказа не входила в принятый интервал
     const freeRoom = allRooms.find((room) => {
-      const ordersByRoomId = ordersOnlyRoomType.filter((order) => order.room.id === room.id);
+      const ordersByRoomId = ordersOnlyRoomType.filter((order) => order.rooms[0].id === room.id);
       return ordersByRoomId.every(
         (order) =>
           !(
@@ -158,8 +167,8 @@ export class OrdersService {
       orderId: order.id,
       price: order.price,
       countDays: order.countDays,
-      roomName: order.room.name,
-      roomType: order.room.type.name,
+      roomName: order.rooms[0].name,
+      roomType: order.rooms[0].type.name,
       comment: order.comment,
       email: client.email,
       firstName: client.firstName,

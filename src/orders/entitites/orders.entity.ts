@@ -1,7 +1,17 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+  JoinTable,
+  ManyToMany,
+} from 'typeorm';
 import { Order } from '../interfaces/order.interface';
 import { Rooms } from '../../rooms/entities/rooms.entity';
 import { ORDER_STATUSES } from '../orders.constants';
+import { Users } from '../../users/entities/users.entity';
 
 @Entity()
 export class Orders implements Order {
@@ -14,9 +24,9 @@ export class Orders implements Order {
   @Column('date')
   endDate: string;
 
-  @ManyToOne(() => Rooms)
-  @JoinColumn()
-  room: Rooms;
+  @ManyToMany(() => Rooms)
+  @JoinTable()
+  rooms: Rooms[];
 
   @Column('integer')
   price: number;
@@ -33,4 +43,8 @@ export class Orders implements Order {
     default: ORDER_STATUSES.BOOKED,
   })
   status: ORDER_STATUSES;
+
+  @ManyToOne(() => Users)
+  @JoinColumn()
+  client: Users;
 }
