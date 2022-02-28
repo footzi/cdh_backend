@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, UseGuards, SetMetadata } from '@nestjs/common';
+import { Controller, Get, HttpCode, UseGuards, SetMetadata, Param } from '@nestjs/common';
 import { errorHandler } from '../utils/errorHandler';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -23,4 +23,12 @@ export class RoomsController {
       errorHandler(error);
     }
   }
+
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @SetMetadata('roles', [USER_ROLES.ADMIN]
+  // @Get()
+  // @HttpCode(200)
+  // async getRoomTypeById() {
+  //
+  // }
 }

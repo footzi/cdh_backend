@@ -26,7 +26,7 @@ export class Users implements User {
   @Column('varchar', { length: 200, nullable: true })
   avatar?: string;
 
-  @Column('varchar', { length: 100 })
+  @Column('varchar', { nullable: true })
   password?: string;
 
   @Column('varchar', { array: true })

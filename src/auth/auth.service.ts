@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -29,7 +29,7 @@ export class AuthService {
   async validateUser(login: string, pass: string): Promise<User | null> {
     const user = await this.usersService.findByLogin(login);
 
-    if (user && user.isConfirm && user.isActive && (await Crypt.compare(pass, user.password))) {
+    if (user && user.isConfirm && user.isActive && user.password && (await Crypt.compare(pass, user.password))) {
       const { password, ...result } = user;
       return result;
     }

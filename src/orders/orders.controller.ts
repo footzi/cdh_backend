@@ -1,5 +1,5 @@
 import { Controller, Post, Body, HttpCode, Get, UseGuards, SetMetadata } from '@nestjs/common';
-import { CreateOrderDTO } from './dto/create-order.dto';
+import { CreateOrderDTO, CreatePublicOrderDTO } from './dto/create-order.dto';
 import { OrdersService } from './orders.service';
 import { CreateOrderResult, Order } from './interfaces/order.interface';
 import { errorHandler } from '../utils/errorHandler';
@@ -25,12 +25,26 @@ export class OrdersController {
     }
   }
 
-  @Post()
+  @Post('public')
   @HttpCode(201)
-  async create(@Body() createOrderDTO: CreateOrderDTO): Promise<{ order: CreateOrderResult | null }> {
+  async create(@Body() createOrderDTO: CreatePublicOrderDTO): Promise<{ order: CreateOrderResult | null }> {
     try {
       return {
         order: await this.ordersService.create(createOrderDTO),
+      };
+    } catch (error) {
+      errorHandler(error);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @SetMetadata('roles', [USER_ROLES.ADMIN])
+  @Post()
+  @HttpCode(201)
+  async createFull(@Body() createOrderDTO: CreateOrderDTO): Promise<{ order: Order | null }> {
+    try {
+      return {
+        order: await this.ordersService.createOrderByAdmin(createOrderDTO),
       };
     } catch (error) {
       errorHandler(error);

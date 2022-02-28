@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as dayjs from 'dayjs';
-import { CreateOrderDTO } from './dto/create-order.dto';
+import { CreateOrderDTO, CreatePublicOrderDTO } from './dto/create-order.dto';
 import { CreateOrderResult } from './interfaces/order.interface';
 import { Orders } from './entitites/orders.entity';
 import { Order } from './interfaces/order.interface';
@@ -14,6 +14,10 @@ import { MailService } from '../mail/mail.service';
 import { formatToFrontendDate } from '../utils/formatToFrontendDate';
 import { USER_ROLES } from '../users/users.constants';
 import { UserUtils } from '../users/user.utils';
+import { RoomsService } from '../rooms/rooms.service';
+import { getCountDays } from '../utils/getCountDays';
+import { UsersService } from '../users/users.service';
+import { PetsService } from '../pets/pets.service';
 
 @Injectable()
 export class OrdersService {
@@ -24,10 +28,13 @@ export class OrdersService {
     private usersRepository: Repository<Users>,
     @InjectRepository(Rooms)
     private roomsRepository: Repository<Rooms>,
-    private mailService: MailService
+    private mailService: MailService,
+    private roomsService: RoomsService,
+    private usersService: UsersService,
+    private petsService: PetsService
   ) {}
 
-  async create(createOrderDTO: CreateOrderDTO): Promise<CreateOrderResult | null> {
+  async create(createOrderDTO: CreatePublicOrderDTO): Promise<CreateOrderResult | null> {
     this.createOrderValidation(createOrderDTO);
 
     const order = await this.saveOrder(createOrderDTO);
@@ -62,7 +69,7 @@ export class OrdersService {
    */
   async getAllOrders(): Promise<Order[]> {
     const orders = await this.ordersRepository.find({
-      relations: ['client', 'client.pets', 'rooms', 'rooms.type'],
+      relations: ['client', 'client.pets', 'rooms', 'rooms.type', 'cameras'],
     });
 
     return orders.map((order) => ({
@@ -71,7 +78,21 @@ export class OrdersService {
     }));
   }
 
-  createOrderValidation(createOrderDTO: CreateOrderDTO) {
+  /**
+   * Получение конкретного заказа
+   */
+  async getOrderById(id: number): Promise<Order> {
+    const order = await this.ordersRepository.findOne(id, {
+      relations: ['client', 'client.pets', 'rooms', 'rooms.type', 'cameras'],
+    });
+
+    return {
+      ...order,
+      client: UserUtils.convertToClient(order.client),
+    };
+  }
+
+  createOrderValidation(createOrderDTO: CreateOrderDTO | CreatePublicOrderDTO) {
     const { startDate, endDate } = createOrderDTO;
     const isStartDateAfterEndData = dayjs(startDate).isAfter(endDate, 'day');
 
@@ -80,19 +101,22 @@ export class OrdersService {
     }
   }
 
-  private async saveOrder(createOrderDTO: CreateOrderDTO): Promise<Orders | null> {
+  private async saveOrder(createOrderDTO: CreatePublicOrderDTO): Promise<Orders | null> {
     const { roomTypeId, startDate, endDate } = createOrderDTO;
 
     // выбираем все комнаты с данным типом комнаты
     const allRooms = await this.roomsRepository.find({ relations: ['type'], where: { type: Number(roomTypeId) } });
 
-    // выбираем все существующие заказы и фильтруем по данному типу команты
-    const orders = await this.ordersRepository.find({ relations: ['room', 'room.type'] });
-    const ordersOnlyRoomType = orders.filter((order) => order.rooms[0].type.id === Number(roomTypeId));
+    // выбираем все существующие заказы и фильтруем по данному типу номера
+    const orders = await this.ordersRepository.find({ relations: ['rooms', 'rooms.type'] });
+
+    const ordersOnlyRoomType = orders.filter(
+      (order) => order.rooms.length && order.rooms[0].type.id === Number(roomTypeId)
+    );
 
     // ищем свободную комнату с условием чтобы дата существующего заказа не входила в принятый интервал
     const freeRoom = allRooms.find((room) => {
-      const ordersByRoomId = ordersOnlyRoomType.filter((order) => order.rooms[0].id === room.id);
+      const ordersByRoomId = ordersOnlyRoomType.filter((order) => order.rooms.length && order.rooms[0].id === room.id);
       return ordersByRoomId.every(
         (order) =>
           !(
@@ -113,7 +137,7 @@ export class OrdersService {
       startDate: createOrderDTO.startDate,
       endDate: createOrderDTO.endDate,
       comment: createOrderDTO.comment,
-      room: freeRoom,
+      rooms: [freeRoom],
       countDays,
       price,
       status: ORDER_STATUSES.BOOKED,
@@ -123,19 +147,19 @@ export class OrdersService {
   }
 
   // @todo вынести все в clientservice
-  private async saveClient(createOrderDTO: CreateOrderDTO): Promise<Users> {
-    const savedClient = await this.usersRepository.findOne({ email: createOrderDTO.email });
+  private async saveClient(createOrderDTO: CreatePublicOrderDTO): Promise<Users> {
+    const savedClient = await this.usersRepository.findOne({ email: createOrderDTO.client.email });
 
     if (savedClient) {
       return savedClient;
     }
 
     const user: User = {
-      login: createOrderDTO.phone,
-      firstName: createOrderDTO.firstName,
-      lastName: createOrderDTO.lastName,
-      email: createOrderDTO.email,
-      phone: createOrderDTO.phone,
+      login: createOrderDTO.client.phone,
+      firstName: createOrderDTO.client.firstName,
+      lastName: createOrderDTO.client.lastName,
+      email: createOrderDTO.client.email,
+      phone: createOrderDTO.client.phone,
       isConfirm: false,
       isActive: true,
       roles: [USER_ROLES.CLIENT],
@@ -177,5 +201,72 @@ export class OrdersService {
     };
 
     this.mailService.sendAdminOfterOrderCreate(data);
+  }
+
+  /**
+   * Расширенное создание заказа - через админку
+   */
+  async createOrderByAdmin(createOrderDTO: CreateOrderDTO): Promise<Order | undefined> {
+    this.createOrderValidation(createOrderDTO);
+
+    const price = await this.getPrice(createOrderDTO.startDate, createOrderDTO.endDate, createOrderDTO.roomTypeId);
+    const countDays = getCountDays(createOrderDTO.startDate, createOrderDTO.endDate);
+    let client = null;
+    const newPets = [];
+
+    const savedClient = await this.usersService.findByLogin(createOrderDTO.client.login);
+
+    if (!savedClient) {
+      client = await this.usersService.createNewClient(createOrderDTO.client);
+    } else {
+      client = savedClient;
+    }
+
+    if (createOrderDTO.pets) {
+      for (const pet of createOrderDTO.pets) {
+        const savedPet = await this.petsService.getByName(pet.name, client);
+
+        if (!savedPet) {
+          const newPet = await this.petsService.create(pet, client);
+          newPets.push(newPet);
+        }
+      }
+    }
+
+    client.pets = client.pets?.length ? [...client.pets, ...newPets] : [...newPets];
+
+    const order = {
+      startDate: createOrderDTO.startDate,
+      endDate: createOrderDTO.endDate,
+      comment: createOrderDTO.comment,
+      rooms: createOrderDTO.rooms,
+      cameras: createOrderDTO.cameras,
+      countDays,
+      price,
+      status: ORDER_STATUSES.BOOKED,
+      client,
+    };
+
+    const newOrder = await this.ordersRepository.save(order);
+
+    return this.getOrderById(newOrder.id);
+  }
+
+  /**
+   * Расчет стоимости заказа
+   *
+   * @param startDate - начальная дата
+   * @param endDate - дата завершения
+   * @param roomTypeId - id типа номера
+   */
+  async getPrice(startDate, endDate, roomTypeId): Promise<number> {
+    const countDays = getCountDays(startDate, endDate);
+    const room = await this.roomsService.getRoomTypeById(roomTypeId);
+
+    if (!room) {
+      throw new HttpException('Ошибка получения стоимости номера', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    return room.price * countDays;
   }
 }

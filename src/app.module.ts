@@ -15,6 +15,8 @@ import { AuthModule } from './auth/auth.module';
 import { Auths } from './auth/entitites/auth.entity';
 import { Pets } from './pets/entitites/pets.entity';
 import { PetsModule } from './pets/pets.module';
+import { Cameras } from './cameras/entitites/cameras.entity';
+import { CamerasModule } from './cameras/cameras.module';
 
 @Module({
   imports: [
@@ -26,7 +28,7 @@ import { PetsModule } from './pets/pets.module';
     TypeOrmModule.forRootAsync({
       useFactory: (config: ConfigService) => ({
         ...config.get('database'),
-        entities: [Orders, Users, Rooms, RoomTypes, Auths, Pets],
+        entities: [Orders, Users, Rooms, RoomTypes, Auths, Pets, Cameras],
       }),
       inject: [ConfigService],
     }),
@@ -35,6 +37,7 @@ import { PetsModule } from './pets/pets.module';
     CallbackModule,
     AuthModule,
     PetsModule,
+    CamerasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User } from './interfaces/users.interface';
+import { Client, User } from './interfaces/users.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from './entities/users.entity';
 import { Equal, Repository } from 'typeorm';
@@ -42,7 +42,7 @@ export class UsersService {
       throw new Error('Пользователь с данным логином уже существует');
     }
 
-    const hashedPassword = await Crypt.hash(createUserDTO.password);
+    const hashedPassword = createUserDTO.password ? await Crypt.hash(createUserDTO.password) : '';
 
     const user = {
       ...createUserDTO,
@@ -56,6 +56,16 @@ export class UsersService {
     const { password, ...rest } = newUser;
 
     return rest;
+  }
+
+  /**
+   * Создает нового клиента
+   * @param {Client} client - данные нового клиента
+   */
+  async createNewClient(client: Client): Promise<Client> {
+    const newUser = await this.create({ ...client, roles: JSON.stringify([USER_ROLES.CLIENT]) });
+
+    return UserUtils.convertToClient(newUser);
   }
 
   /**
