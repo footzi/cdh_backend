@@ -10,7 +10,7 @@ export class Rooms implements Room {
   @Column('varchar', { length: 100 })
   name: string;
 
-  @ManyToOne(() => RoomTypes, (type) => type.id)
+  @ManyToOne(() => RoomTypes, (type) => type.id, { cascade: this })
   @JoinColumn()
   type: RoomTypes;
 }
