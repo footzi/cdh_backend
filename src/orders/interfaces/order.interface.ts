@@ -1,20 +1,18 @@
-import { Rooms } from '../../rooms/entities/rooms.entity';
+import { Room } from '../../rooms/interfaces/room.interface';
 import { ORDER_STATUSES } from '../orders.constants';
 import { Client } from '../../users/interfaces/users.interface';
-import { Pet } from '../../pets/interfaces/pets.interfaces';
 import { Camera } from '../../cameras/interfaces/cameras.interfaces';
 
 export interface Order {
   startDate: string;
   endDate: string;
-  rooms: Rooms[];
+  rooms: Room[];
   cameras: Camera[];
   comment?: string | null;
   price: number;
   countDays: number;
   status: ORDER_STATUSES;
   client?: Client;
-  pets?: Pet[];
 }
 
 export interface CreateOrderResult {

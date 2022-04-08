@@ -16,7 +16,7 @@ export class PetsService {
   /**
    * Создает нового питомца
    */
-  async create(createPetDto: CreatePetDto, client?: Client): Promise<Pets | undefined> {
+  async create(createPetDto: CreatePetDto, client?: Client): Promise<Pet | undefined> {
     if (client) {
       return this.petsRepository.save({ ...createPetDto, client });
     } else {
@@ -32,5 +32,14 @@ export class PetsService {
    */
   async getByName(name: string, client: Client): Promise<Pet | undefined> {
     return this.petsRepository.findOne({ name, client });
+  }
+
+  /**
+   * Обновляет питомца
+   *
+   * @param pet - питомец
+   */
+  async update(pet: Pet): Promise<void> {
+    await this.petsRepository.update(pet.id, pet);
   }
 }

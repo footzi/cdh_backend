@@ -17,7 +17,9 @@ export class Orders implements Order {
   @Column('date')
   endDate: string;
 
-  @ManyToMany(() => Rooms)
+  @ManyToMany(() => Rooms, (rooms) => rooms, {
+    cascade: true,
+  })
   @JoinTable()
   rooms: Rooms[];
 

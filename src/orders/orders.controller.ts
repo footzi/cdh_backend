@@ -1,5 +1,5 @@
-import { Controller, Post, Body, HttpCode, Get, UseGuards, SetMetadata } from '@nestjs/common';
-import { CreateOrderDTO, CreatePublicOrderDTO } from './dto/create-order.dto';
+import { Controller, Post, Body, HttpCode, Get, UseGuards, SetMetadata, Put } from '@nestjs/common';
+import { CreateOrderDTO, CreatePublicOrderDTO, UpdateOrderDTO } from './dto/create-order.dto';
 import { OrdersService } from './orders.service';
 import { CreateOrderResult, Order } from './interfaces/order.interface';
 import { errorHandler } from '../utils/errorHandler';
@@ -45,6 +45,20 @@ export class OrdersController {
     try {
       return {
         order: await this.ordersService.createOrderByAdmin(createOrderDTO),
+      };
+    } catch (error) {
+      errorHandler(error);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @SetMetadata('roles', [USER_ROLES.ADMIN])
+  @Put()
+  @HttpCode(201)
+  async updateOrder(@Body() updateOrderDTO: UpdateOrderDTO) {
+    try {
+      return {
+        order: await this.ordersService.updateOrder(updateOrderDTO),
       };
     } catch (error) {
       errorHandler(error);

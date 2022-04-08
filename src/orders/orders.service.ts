@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as dayjs from 'dayjs';
-import { CreateOrderDTO, CreatePublicOrderDTO } from './dto/create-order.dto';
+import { CreateOrderDTO, CreatePublicOrderDTO, UpdateOrderDTO } from './dto/create-order.dto';
 import { CreateOrderResult } from './interfaces/order.interface';
 import { Orders } from './entitites/orders.entity';
 import { Order } from './interfaces/order.interface';
@@ -209,7 +209,8 @@ export class OrdersService {
   async createOrderByAdmin(createOrderDTO: CreateOrderDTO): Promise<Order | undefined> {
     this.createOrderValidation(createOrderDTO);
 
-    const price = await this.getPrice(createOrderDTO.startDate, createOrderDTO.endDate, createOrderDTO.roomTypeId);
+    const roomTypeId = createOrderDTO.rooms[0].type.id;
+    const price = await this.getPrice(createOrderDTO.startDate, createOrderDTO.endDate, roomTypeId);
     const countDays = getCountDays(createOrderDTO.startDate, createOrderDTO.endDate);
     let client = null;
     const newPets = [];
@@ -222,8 +223,8 @@ export class OrdersService {
       client = savedClient;
     }
 
-    if (createOrderDTO.pets) {
-      for (const pet of createOrderDTO.pets) {
+    if (createOrderDTO.client.pets) {
+      for (const pet of createOrderDTO.client.pets) {
         const savedPet = await this.petsService.getByName(pet.name, client);
 
         if (!savedPet) {
@@ -268,5 +269,36 @@ export class OrdersService {
     }
 
     return room.price * countDays;
+  }
+
+  /**
+   * Обновление заказа
+   */
+  async updateOrder(updateOrderDTO: UpdateOrderDTO): Promise<Order | undefined> {
+    const oldOrder = await this.getOrderById(updateOrderDTO.id);
+    const roomTypeId = updateOrderDTO.rooms[0].type.id;
+    const newOrder: Order = { ...updateOrderDTO };
+
+    if (oldOrder.startDate !== updateOrderDTO.startDate || oldOrder.endDate !== updateOrderDTO.endDate) {
+      const price = await this.getPrice(updateOrderDTO.startDate, updateOrderDTO.endDate, roomTypeId);
+      const countDays = getCountDays(updateOrderDTO.startDate, updateOrderDTO.endDate);
+
+      newOrder.price = price;
+      newOrder.countDays = countDays;
+    }
+
+    if (updateOrderDTO.client?.pets) {
+      for (const pet of updateOrderDTO.client.pets) {
+        if (pet.id) {
+          await this.petsService.update(pet);
+        } else {
+          await this.petsService.create(pet, updateOrderDTO.client);
+        }
+      }
+    }
+
+    await this.ordersRepository.save(newOrder);
+
+    return await this.getOrderById(updateOrderDTO.id);
   }
 }
